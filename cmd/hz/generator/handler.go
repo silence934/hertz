@@ -383,9 +383,13 @@ func (pkgGen *HttpPackageGenerator) genBizService(pkg *HttpPackage, root *Router
 
 			bizServiceMap := make(map[string][]*HttpMethod)
 			for _, m := range s.Methods {
+				if len(m.BizServicePath) == 0 {
+					continue
+				}
 				if bizServiceMap[m.BizServicePath] == nil {
 					bizServiceMap[m.BizServicePath] = make([]*HttpMethod, 0)
 				}
+
 				newHttpMethod := &HttpMethod{}
 				json, _ := jsoniter.Marshal(m)
 				_ = jsoniter.Unmarshal(json, newHttpMethod)
@@ -431,6 +435,7 @@ func (pkgGen *HttpPackageGenerator) genBizService(pkg *HttpPackage, root *Router
 					if m.GenHandler {
 						handler.Methods = append(handler.Methods, m)
 					}
+					m.InitComment()
 				}
 
 				if err := pkgGen.updateBizService(handler, bizServiceTplName, handler.FilePath, false); err != nil {

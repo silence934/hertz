@@ -186,12 +186,6 @@ func (pkgGen *HttpPackageGenerator) Generate(pkg *HttpPackage) error {
 	routerPackage := util.SubPackage(pkgGen.ProjPackage, routerDir)
 	root := NewRouterTree()
 
-	//if pkgGen.GenBizService {
-	//	if err := pkgGen.genBizService(pkg, root); err != nil {
-	//		return err
-	//	}
-	//}
-
 	if err := pkgGen.genBizService(pkg, root); err != nil {
 		return err
 	}

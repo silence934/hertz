@@ -189,21 +189,25 @@ func astToService(ast *parser.Thrift, resolver *Resolver, args *config.Argument)
 				Serializer:         sr,
 				OutputDir:          handlerOutDir,
 				GenHandler:         true,
+
+				Comment: m.GetReservedComments(),
 				// Annotations:     m.Annotations,
 			}
 
-			bizServicePath := getAnnotationV2(m.Annotations, BizServiceFile, "biz/service/default_service.go")
+			bizServicePath := getAnnotationV2(m.Annotations, BizServiceFile, "")
 
-			alias := os_path.Base(os_path.Dir(bizServicePath))
+			if len(bizServicePath) > 0 {
+				alias := os_path.Base(os_path.Dir(bizServicePath))
 
-			index := 0
-			for bPath := bizServiceImportAs[alias]; len(bPath) != 0 && bizServicePath != bPath; {
-				index++
-				alias = fmt.Sprintf("%s%d", alias, index)
+				index := 0
+				for bPath, ok := bizServiceImportAs[alias]; ok && os_path.Dir(bizServicePath) != os_path.Dir(bPath); {
+					index++
+					alias = fmt.Sprintf("%s%d", alias, index)
+				}
+				bizServiceImportAs[alias] = bizServicePath
+				method.BizServiceImports = [2]string{alias, os_path.Dir(bizServicePath)}
+				method.BizServicePath = bizServicePath
 			}
-			bizServiceImportAs[alias] = bizServicePath
-			method.BizServiceImports = [2]string{alias, os_path.Dir(bizServicePath)}
-			method.BizServicePath = bizServicePath
 
 			refs := resolver.ExportReferred(false, true)
 			method.Models = make(map[string]*model.Model, len(refs))
